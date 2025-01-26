@@ -131,11 +131,11 @@ public class ShipController : MonoBehaviour
         m_Rigidbody.linearVelocity = Vector3.zero;
         
         // Rotate constantly, only on the z-axis, if needed
-        m_Rigidbody.rotation = Quaternion.Euler(new Vector3(
-            0f, 
-            0f, 
-            m_Rigidbody.rotation.z
-        ));
+        // m_Rigidbody.rotation = Quaternion.Euler(new Vector3(
+        //     0f, 
+        //     0f, 
+        //     m_Rigidbody.rotation.z
+        // ));
         m_Rigidbody.transform.Rotate(0, 0, m_BoostProperties.m_BoostRotation * Time.deltaTime);
     }
     

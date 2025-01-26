@@ -21383,7 +21383,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3634121912467485580, guid: 221f1c936c6d2864a9a84e3c413a3681, type: 3}
       propertyPath: m_ThrustSpeed
-      value: 18
+      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 3634121912467485580, guid: 221f1c936c6d2864a9a84e3c413a3681, type: 3}
       propertyPath: m_BGAudioSource
