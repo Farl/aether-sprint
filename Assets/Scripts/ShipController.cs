@@ -72,6 +72,11 @@ public class ShipController : MonoBehaviour
         }
         
         m_ShipPositionLabel.text = $"Oxygen Level: {Mathf.Min(m_OxygenLevel, 100)}%";
+
+        if (m_Rigidbody.position.z >= 520)
+        {
+            SceneManager.LoadScene("GameOver");
+        }
     }
 
     private void UpdateControlledMovement()
