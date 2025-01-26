@@ -1,0 +1,28 @@
+fileFormatVersion: 2
+guid: d5ee7735693b3401e91ac24cb0732439
+timeCreated: 1438094767
+licenseType: Store
+AudioImporter:
+  serializedVersion: 6
+  defaultSettings:
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  preloadAudioData: 1
+  loadInBackground: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 42364
+  packageName: Space Loops
+  packageVersion: 1.0
+  assetPath: Assets/Space Loops/Space Map LOOP.wav
+  uploadId: 74571

@@ -1,0 +1,28 @@
+fileFormatVersion: 2
+guid: 995f21b1620624996ae92240b22b1a40
+timeCreated: 1438094732
+licenseType: Store
+AudioImporter:
+  serializedVersion: 6
+  defaultSettings:
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  preloadAudioData: 1
+  loadInBackground: 0
+  3D: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 42364
+  packageName: Space Loops
+  packageVersion: 1.0
+  assetPath: Assets/Space Loops/Deep Space Ambience LOOP.wav
+  uploadId: 74571
