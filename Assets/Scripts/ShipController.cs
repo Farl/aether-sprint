@@ -13,6 +13,12 @@ public class ShipController : MonoBehaviour
 
     [SerializeField] [Tooltip("Audio source for background music player")]
     public AudioSource m_BGAudioSource;
+    
+    [SerializeField] [Tooltip("Animated train")]
+    public GameObject m_AnimatedTrain;
+    
+    [SerializeField] [Tooltip("Animated train movement speed")]
+    public float m_AnimatedTrainSpeed = 1.5f;
 
     [SerializeField] [Tooltip("Elapsed seconds until the starting intro is done")]
     public float m_StartIntroTime = 6f;
@@ -42,6 +48,7 @@ public class ShipController : MonoBehaviour
     private BoostProperties m_BoostProperties = null;
     private int m_OxygenLevel = 0;
     private Coroutine m_BoostCoRoutine;
+    private bool b_IsTrainMoving = false;
 
     private void Start()
     {
@@ -51,6 +58,8 @@ public class ShipController : MonoBehaviour
 
         m_StartingThrustSpeed = m_ThrustSpeed;
         m_ThrustSpeed = 3f;
+        
+        StartCoroutine(TriggerAnimatedStart());
     }
 
     private void Update()
@@ -71,11 +80,16 @@ public class ShipController : MonoBehaviour
             UpdateControlledMovement();
         }
         
-        m_ShipPositionLabel.text = $"Oxygen Level: {Mathf.Min(m_OxygenLevel, 100)}%";
+        m_ShipPositionLabel.text = $"Oxygen Level: {Mathf.Min(m_OxygenLevel, 100)}% | Game time: {Time.time}";
 
         if (m_Rigidbody.position.z >= 520)
         {
             SceneManager.LoadScene("GameOver");
+        }
+
+        if (b_IsTrainMoving && m_AnimatedTrain)
+        {
+            m_AnimatedTrain.transform.position += new Vector3(m_AnimatedTrainSpeed, 0f, 0f);
         }
     }
 
@@ -147,6 +161,13 @@ public class ShipController : MonoBehaviour
         b_IsBoosting = true;
         yield return new WaitForSeconds(m_BoostProperties.m_BoostDuration);
         b_IsBoosting = false;
+    }
+
+    private IEnumerator TriggerAnimatedStart()
+    {
+        yield return new WaitForSeconds(m_StartIntroTime);
+
+        b_IsTrainMoving = true;
     }
 
     private void PickupOxygen(GameObject oxygenBubbleObj)
