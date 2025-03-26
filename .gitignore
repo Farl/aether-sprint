@@ -73,3 +73,6 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 connectwebgl.zip
+.utmp
+.idea
+.DS_Store
