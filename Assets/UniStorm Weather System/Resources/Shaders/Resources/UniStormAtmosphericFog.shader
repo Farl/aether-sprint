@@ -1,6 +1,9 @@
 Shader "Hidden/UniStorm Atmospheric Fog" {
 Properties {
-	_MainTex ("Base (RGB)", 2D) = "black" {}
+	//_MainTex ("Base (RGB)", 2D) = "black" {}
+	_MainTex ("Base (RGB)", any) = "black" {}
+	//_MainTexArray ("Base (RGB)", 2DArray) = "black" {}
+
 	_NoiseTex("Noise Texture", 2D) = "white" {}
 	_UpperColor("-", Color) = (.5, .5, .5, .5)
 	_BottomColor("-", Color) = (.5, .5, .5, .5)
@@ -33,11 +36,18 @@ CGINCLUDE
 	#include "UnityCG.cginc"	
 	#include "AutoLight.cginc"
 	#include "Lighting.cginc"
+	
 	#pragma multi_compile DIRECTIONAL POINT SPOT
 	
 	sampler2D _NoiseTex;
-	uniform sampler2D _MainTex;
-	uniform sampler2D_float _CameraDepthTexture;
+
+	//uniform sampler2D _MainTex;
+	UNITY_DECLARE_SCREENSPACE_TEXTURE(_MainTex);
+	//UNITY_DECLARE_SCREENSPACE_TEXTURE(_MainTexArray);
+
+	//uniform sampler2D_float _CameraDepthTexture;
+	UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTexture);
+
 	uniform float4 _HeightParams;
 	uniform float4 _DistanceParams;
 	
@@ -79,6 +89,7 @@ CGINCLUDE
 		float4 vertex : POSITION;
 		float3 uv : TEXCOORD0;
 		float3 normal : NORMAL;
+		UNITY_VERTEX_INPUT_INSTANCE_ID
 	};
 
 	//Output
@@ -89,6 +100,9 @@ CGINCLUDE
 		float4 interpolatedRay : TEXCOORD2;
 		float3 worldPos : TEXCOORD3;
 		float3 normalDir : TEXCOORD4;
+
+		UNITY_VERTEX_INPUT_INSTANCE_ID
+		UNITY_VERTEX_OUTPUT_STEREO
 	};
 
 	// phase function
@@ -101,13 +115,20 @@ CGINCLUDE
 	v2f vert (appdata v)
 	{
 		v2f o;
+		UNITY_SETUP_INSTANCE_ID(v);
+		UNITY_INITIALIZE_OUTPUT(v2f, o);
+		UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+		
+		// get index
+		half index = v.vertex.z;
+		// override z to default value
+		float4 v_vertex = v.vertex;
+		v_vertex.z = 0.1;
 
-		o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+		o.worldPos = mul(unity_ObjectToWorld, v_vertex);
 		o.normalDir = UnityObjectToWorldNormal(v.normal);
 
-		half index = v.vertex.z;
-		v.vertex.z = 0.1;
-		o.pos = UnityObjectToClipPos(v.vertex);
+		o.pos = UnityObjectToClipPos(v_vertex);
 		o.uv1 = v.uv;
 		o.uv_depth = v.uv.xy;
 
@@ -183,19 +204,27 @@ CGINCLUDE
 
 	half4 ComputeFog (v2f i, bool distance, bool height) : SV_Target
 	{
+		//fixed4 col = lerp(fixed4(1,0,0,1), fixed4(0,1,0,1), unity_StereoEyeIndex);
+		//return col;
+		
 		float3 sceneColor = float3(1,1,1);
 		float rawDepth = 0;
 		half4 Final;
+		
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
 		if (_VRSinglePassEnabled == 1) //Use Single Pass
 		{
-			UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
-			sceneColor = tex2D(_MainTex, UnityStereoTransformScreenSpaceTex(i.uv1));
+			//sceneColor = tex2D(_MainTex, UnityStereoTransformScreenSpaceTex(i.uv1));
+			sceneColor = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, i.uv1);
+			//sceneColor = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTexArray, float3(i.uv1.x, i.uv1.y, unity_StereoEyeIndex));
+
 			rawDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, UnityStereoTransformScreenSpaceTex(i.uv_depth));
 		}
 		else if (_VRSinglePassEnabled == 0)
 		{
-			sceneColor = tex2D(_MainTex, i.uv1);
+			//sceneColor = tex2D(_MainTex, i.uv1);
+			sceneColor = UNITY_SAMPLE_SCREENSPACE_TEXTURE(_MainTex, i.uv1);
 			rawDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv_depth);
 		}
 
@@ -259,6 +288,7 @@ CGINCLUDE
 		}
 
 		return half4(lerp(Final, sceneColor, lerp(saturate(_FogBlendHeight*(wsPos.y - _CameraWS.y)*0.007), 1, fogFac)), 0);
+		
 	}
 
 ENDCG
@@ -270,6 +300,7 @@ SubShader
 	// 0: distance + height
 	Pass
 	{
+		Name "Distance Fog + Height Fog"
 		Tags { "LightMode" = "ForwardBase"}
 		CGPROGRAM
 		#pragma vertex vert
@@ -280,6 +311,7 @@ SubShader
 	// 1: distance
 	Pass
 	{
+		Name "Distance Fog"
 		Tags { "LightMode" = "ForwardBase"}
 		CGPROGRAM
 		#pragma vertex vert
@@ -290,6 +322,7 @@ SubShader
 	// 2: height
 	Pass
 	{
+		Name "Height Fog"
 		Tags { "LightMode" = "ForwardBase"}
 		CGPROGRAM
 		#pragma vertex vert

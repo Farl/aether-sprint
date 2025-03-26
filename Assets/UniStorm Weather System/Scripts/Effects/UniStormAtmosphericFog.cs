@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UniStorm.Effects
 {
@@ -60,16 +61,27 @@ namespace UniStorm.Effects
         public float SunControl = 1;
         [HideInInspector]
         public float MoonControl = 1;
+        
+        private static RenderTexture _tempRT = null;
 
-        public override bool CheckResources ()
-		{
-            CheckSupport (true);
+        public override bool CheckResources()
+        {
+            CheckSupport(true);
 
-            fogMaterial = CheckShaderAndCreateMaterial (fogShader, fogMaterial);
+            fogMaterial = CheckShaderAndCreateMaterial(fogShader, fogMaterial);
 
             if (!isSupported)
-                ReportAutoDisable ();
+                ReportAutoDisable();
             return isSupported;
+        }
+
+        void OnDestroy()
+        {
+            if (_tempRT)
+            {
+                DestroyImmediate(_tempRT);
+                _tempRT = null;
+            }
         }
 
         [ImageEffectOpaque]
@@ -181,7 +193,7 @@ namespace UniStorm.Effects
 		{
             RenderTexture.active = dest;
 
-            fxMaterial.SetTexture ("_MainTex", source);
+            fxMaterial.SetTexture("_MainTex", source);
 
             GL.PushMatrix ();
             GL.LoadOrtho ();

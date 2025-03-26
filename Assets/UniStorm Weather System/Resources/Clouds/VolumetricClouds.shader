@@ -125,6 +125,7 @@
     {
         float2 uv : TEXCOORD0;
         float4 vertex : POSITION;
+		UNITY_VERTEX_INPUT_INSTANCE_ID
     };
 
     struct v2f
@@ -133,6 +134,8 @@
         float2 uv : TEXCOORD0;
 		float3 worldPos : TEXCOORD1;
 		float4 position_in_world_space : TEXCOORD2;
+		UNITY_VERTEX_INPUT_INSTANCE_ID 
+		UNITY_VERTEX_OUTPUT_STEREO
     };
 
     sampler2D _MainTex;
@@ -151,7 +154,10 @@
     {
         v2f o;
 
-        UNITY_INITIALIZE_OUTPUT(v2f, o);
+		UNITY_SETUP_INSTANCE_ID(v);
+		UNITY_INITIALIZE_OUTPUT(v2f, o);
+		UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
 		o.worldPos = mul(unity_ObjectToWorld, v.vertex);
 
 		o.position_in_world_space = mul(unity_ObjectToWorld, v.vertex);
@@ -186,6 +192,7 @@
 
     fixed4 frag(v2f i) : SV_Target
     {
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
         float2 lon = (i.uv.xy + _uJitter * (1.0 / _uSize)) - 0.5;
         float a1 = length(lon) * 3.181592;
         float sin1 = sin(a1);

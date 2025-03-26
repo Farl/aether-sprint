@@ -27,6 +27,8 @@ Category {
 			#pragma fragment frag
 			#pragma multi_compile_particles
 			#pragma multi_compile_fog
+			#pragma multi_compile_instancing
+			#pragma multi_compile _STEREO_INSTANCING_ON
 
 			#include "UnityCG.cginc"
 
@@ -41,6 +43,7 @@ Category {
 				fixed4 color : COLOR;
 				float2 texcoord : TEXCOORD0;
 				float4 texcoord1 : TEXCOORD1;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
 			struct v2f {
@@ -48,6 +51,8 @@ Category {
 				fixed4 color : COLOR;
 				float2 texcoord : TEXCOORD0;
 				float4 texcoord1 : TEXCOORD1;
+            	UNITY_VERTEX_INPUT_INSTANCE_ID 
+				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			float2 rotateUV(float2 uv, float degrees)
@@ -74,19 +79,28 @@ Category {
 			v2f vert (appdata_t v)
 			{
 				v2f o;
+				UNITY_SETUP_INSTANCE_ID(v);
 				UNITY_INITIALIZE_OUTPUT(v2f,o);
+    			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
 				float s = _ProjectionParams.z;
+				int eyeIndex = unity_StereoEyeIndex;
+
+				// 获取 VR 兼容的视图和投影矩阵
+				float4x4 viewMatrix = UNITY_MATRIX_V;	// or UNITY_MATRIX_I_V??
+				float4x4 projMatrix = UNITY_MATRIX_P;
 
 				float4x4 mvNoTranslation =
 					float4x4(
-						float4(UNITY_MATRIX_V[0].xyz, 0.0f),
-						float4(UNITY_MATRIX_V[1].xyz, 0.0f),
-						float4(UNITY_MATRIX_V[2].xyz, 0.0f),
+						float4(viewMatrix[0].xyz, 0.0f),
+						float4(viewMatrix[1].xyz, 0.0f),
+						float4(viewMatrix[2].xyz, 0.0f),
 						float4(0, 0, 0, 1.1)
 						);
 
-				o.vertex = mul(mul(UNITY_MATRIX_P, mvNoTranslation), v.vertex * float4(s, s, s, 1));
+				o.vertex = mul(mul(projMatrix, mvNoTranslation), v.vertex * float4(s, s, s, 1));
+
+            	//o.vertex = UnityObjectToClipPos(v.vertex);
 				o.texcoord = TRANSFORM_TEX(v.texcoord, _Starmap);
 				o.color = v.color;
 
@@ -101,7 +115,9 @@ Category {
 			}
 
 			fixed4 frag (v2f i) : SV_Target
-			{				
+			{
+				UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i)
+				//fixed4 col = lerp(fixed4(1,0,0,1), fixed4(0,1,0,1), unity_StereoEyeIndex);
 				fixed4 col = 1.0f * i.color * _Color * (tex2D(_Starmap, i.texcoord1.xy));
 				return col;
 			}
